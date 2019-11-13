@@ -2,74 +2,100 @@
 ## November 2019
 
 This is like a starter project, from this you can build your own. I'm naming this rrr-work for reasons that
-seem obvious to me. You'll want your project to have a name that describes it, so where I use rrr in this document
-substitute a real name that describes the application instead of the technology.
+seem obvious to me. You'll want your project to have a name that describes it, so where I use rrr in this project
+substitute a real name that describes your application instead of the technology.
 
 ### Objectives
-It's been a couple of years since I started a new rails project, there's new stuff to use, and now I'm like "use docker for everything", so
-I needed a container for a greenfield, state of the art, Rails with React project. My objective for development containers is to 
+
+It's been a couple of years since I started a new rails project, there's new stuff to use,
+and lately I'm like "use Docker for everything", so
+I wanted an image for a greenfield, state of the art, Ruby on Rails with React project.
+My objectives for development containers are to 
 avoid environment alias wranglers like **rbenv** or **rvm**, avoid loading up my actual computer with multiple versions
-of backported and home-brewed packages, and maximize portability so even a Windows user can use it.
+of backported and home-brewed packages, hide away any networking complexity, and last, and least, maximize portability so that, maybe, you can use it on Windows.
 
-I wanted a real Linux environment with a good colorized bash shell, command history, and strong vim based IDE, and 
-still let the youngsters use their proprietary GUI IDEs if they need to.
+I wanted a real Linux environment with a good colorized bash shell, command history, a strong vim based IDE, and 
+still let the youngsters use their proprietary GUI IDEs if they need to. If you do want a slick editor I have found
+VSC to be excellent, it has many plugins and the syntax checking and code completion work very well.
 
-I wanted volatile containers with all work artifacts stored in bound volumes so I could rebuild the image as needed and
+I also wanted removable containers with all work artifacts stored in bound volumes so I could rebuild the image as needed and
 just start up again where I left off.
 
 ### What's Here
-The procedure in this Readme to start your React on Rails project will leave you with a project directory that contains 3 sub directories, 
-one for your home directory, one for gems, and one for MySQL data. You also have 3 scripts that are just docker run commands, I do it 
-this way because it's what works for me. up-work will bring you to a bash prompt in the home directory with all the good tools at your fingertips.
-up-root you may never need but it's good to know how to get a root prompt. up-mysql is just to launch an official MySQL8 container with 
-data saved in a bound volume.
 
-What I've got now is ruby 2.6.5, rails 6.0.1, nodejs 12, yarn 19.1, python3.5, lua5.3, and the latest versions the gems that are required for 
-Rails with React. And SpaceVim!
+The procedure in this Readme will start your Ruby on Rails with React project and leave you with a project directory containing
+3 sub directories, one for your home directory, one for gems, and one for MySQL data.
+You also have several scripts that are just Docker commands, I do it this way because it's quick to fire up
+with all the right options.
+up-net.sh starts a Docker network with a dependable subnet.
+up-work.sh will bring you to a bash prompt in the app user's home directory with all the good tools at your fingertips.
+You may never need up-root.sh but it's good to know how to get a root prompt. And up-mysql.sh just launchs an official MySQL:8
+container with data saved in a bound volume.
 
-All my scripts and the commands in this readme assume bash, if you're on Windows these will probably not work.
- If you're not willing to install Linux over your Windows you'll have to figure
+What I've got running now is ruby 2.6.5, rails 6.0.1, nodejs 12, yarn 19.1, python 3.5, lua 5.3,
+and the latest versions the gems that are required for Rails with React. Oh, and SpaceVim!
+
+All my scripts and the commands in this readme assume bash, if you're on Windows these will not work.
+I've tried Git bash (cygwin), and WSL bash both have problems. As usual the intential incompatibilites
+of Windows file systems and end-of-line characters are show stoppers.
+
+If you're not willing to replace Windows with a nice Ubuntu install, or at least dual boot, you'll have to figure
 out for yourself how to change the code and invoke these scripts and commands, hopefully the intent is clear enough to get 
 you where you need to be.
 
 ### How to Get It Running 
 
-You've got to have docker running on your computer, but that's the only prerequisite, and that's why I'm all "use docker for everything".
+You've got to have Docker running on your computer, but that's the only prerequisite,
+and that's a big reason why I'm all "use Docker for everything", just install Docker and then run just about anything.
 
-Clone or copy this project into your normal directory for work. Run a terminal window and change directory into this project.
+Clone or copy this rrr project directory into your normal directory for work, but give it the name of the project
+you want to build.  Run a terminal window and change directory into this new project directory.
 
-To run the containers you'll need directories to bind at /home/app, /usr/local/bundle, and /var/lib/mysql
+#### Rename
 
-	mkdir app data bundle
+The first thing to do is fix the name, you could keep rrr, but really, you should edit all the scripts and replace rrr with the name you want for your project. Keep in mind as you follow these directions,
+rrr shows up in a few commands, always replace it with your project's name.
 
-The application container depends on a database container, so get that up first. If you don't have the official MySQL8 image you'll see it download
-and then run daemonized.
+When run, the containers will create the directories they need for binding /home/app, /usr/local/bundle, and /var/lib/mysql.  These are specified in the up* scripts. I like keeping the bound volumes in the project directory, there it's easy to edit outside of the docker container, or erase everything and
+start over.
+
+The Next thing to do is make sure your dev container's app user has the same UID and GID as you do so that
+you can edit outside of the container. Do a *ls -ln* to identify your user id numbers and then edit the
+Dockerfile's addgroup and adduser commands to match. This is the main reason to build your own image
+instead of just downloading one from dockerhub.
+
+#### Build and run the containers
+
+Now run the network before you start any containers, or there will be errors.
+
+	./up-net.sh
+
+Then you can start up MySQL, unless you have another preference. I'm running MySQL 8, there are issues
+that need be worked around, version 5.7 is easier to get running, and PostreSQL has some great plugins.
+Change the script if required.
 
 	./up-mysql.sh
 
-I recommend building the application container yourself, it should work fine with an image from a registry, but building gives you a chance to 
-get any updated packages.
+Build your development image, remember to use your project's name instead of rrr.
 
 	Docker build -t rrr-work .
 
-Now you can start a container with the up-work script
+Now you can start a container with the up-work script.
 
 	./up-work.sh
 
-That should bring you to a prompt inside the container, but because of the build process the home directory is bare,
-we don't have the nice bash prompt, correct environment, or SpaceVim.
-So in the container run:
+That should bring you to a prompt inside the container, but because we mount the app user's home
+directory it's empty,
+so we don't have an initialized shell, correct environment variables, or SpaceVim.
+In the container run:
 
 	/tmp/newhome.sh
 
-And when it's all done exit to stop and remove the container, then start it up again.
+And when it's all done type *exit* then run up-work again.
 
-	exit
-	./up-work.sh
+Now we have an initialized bash shell, and fresh SpaceVim. Run *vim* (twice?) to get it to install all it's plugins.
 
-Now we have an initialized bash shell, and fresh SpaceVim. Run that to get it to install all it's plugins.
-
-	vim
+#### Start a rails project
 
 When SpaceVim is ready, edit a Gemfile
 
@@ -77,7 +103,7 @@ When SpaceVim is ready, edit a Gemfile
 	
 The official Ruby image we used to build our image has a basic set of gems including bundler. We want gems specific to our app to be saved
 so that we don't have to bundle install every time we restart the container. That's what the bundle sub-directory does.  After these next steps you can
-see gems being saved into that directory by bundler. Create a Gemfile like this:
+see gems saved into that directory by bundler. This is all you should have in this temporary Gemfile:
 
 	source 'https://rubygems.org'	
 
@@ -89,8 +115,8 @@ Now install some gems with bundler.
 
 	bundle install
 
-Go get a cup of coffee.
-This works for me with no missing dependencies or other problems, but it didn't the first time, everything required should be in the image,
+This works for me with no missing dependencies or other problems, but it didn't the first time,
+everything required should be built into the image,
 if not, the right approach is to fix that in the Dockerfile and rebuild the image.
 Once you've initialized your home directory you can rebuild the image as much as you want and you
 won't have to run newhome again. Just run up-work again and your home directory will be just as you left it.
@@ -100,108 +126,152 @@ you can get rid of that Gemfile
 
 	rm Gemfile Gemfile.lock
 
-And now you can create a rails project. As I heard it, yarn or webpack or something has a problem if it's not running in a project that already 
-has git initialized. You are of course welcome to try using rails new with the name of a project directory to create, but this worked for me:
+Now you can create a rails project.
 
-	mkdir rrr
-	cd rrr
-	rails new . --webpack=react --skip-coffee --database=mysql --skip-turbolinks
+	rails new rrr --webpack=react --database=mysql --skip-coffee --skip-turbolinks
 
 You may know rails options better than me, feel free to change what I've done to suit your objectives.
-You may see some warnings about 'unmet peer dependency "webpack@^4.0.0"', but it installs webpack 4.41.2, so I expect we're good.
+You may see some warnings about 'unmet peer dependency "webpack@^4.0.0"', but it installs webpack 4.41.2,
+so I expect we're good.
 
-You might see a yarn error. Follow the instructions to 
+Yarn saves information in the app user's home directory, so if you remove your rails project directory and run **rails new** again
+you might see a yarn error. Follow the instructions to 
 
 	yarn install --check-files
 
-And that seems to fix it.
+And that will fix it.
 
 The rails new process is not fast, but
 when it's done you'll have a new sub-directory named rrr and in it a real rails project ready to run, almost.
 Rails creates a project suited to run on your computer, not in a container, so there are a few config changes to make.
-By default puma binds to 127.0.0.1:3000, but nobody runs a browser in a container, so that doesn't work.
 
-Get the IP of your container.
+#### Configure Rails for Docker
 
-	ip a | grep inet
+By default puma binds to 127.0.0.1:3000, but nobody runs a browser in a container, so that's not going to work.
 
-The second one should not be a loopback, for me it was 172.17.0.3.
+For a minute I had a problem with Docker on my MacBook where I had to map to the containers IP, but after
+an update from Docker I tried again and now it's working the way I thought it should. You shouldn't need to worry 
+about the specific IP of your container. 
 
 Edit config/puma.rb, comment out the port line and add a bind line,
 that part should look like this when you're done.
 
 	# port        ENV.fetch("PORT") { 3000 }
-	bind      "tcp://172.17.0.3:3000"
+	bind      "tcp://0.0.0.0:3000"
 
-The IP address may be a problem spot, I'd like to use 0.0.0.0 there, but it does not connect.  I'm not sure if this a problem with puma or docker port mapping.
-Normally I have no problem binding to 0.0.0.0. You don't have to do this now, but you can prevent the container from changing IP on a restart
-by adding a line like this to the up-work script. Just remember the last line in that script must be the name of the image "rrr-work",
-because it's all just one command with escaped newlines to make it easier to read and edit.
+It's real nice to have the webpacker dev server running and updating your pages as you make changes, saves a lot of time.
+Edit config/webpacker.yml and change these lines as shown.
 
-	--ip="172.17.0.3" \
+    host: 0.0.0.0
+    port: 3035
+    public: 127.0.0.1:3035
 
-It occurs to me a better solution, if I can't get the zeros address to bind, is to pass the IP to puma in the ENV.
 
-In another terminal window run
+Now just pay attention to the two port expose options in the up-work script. They map the container's ports 3000 and 3035 to 
+the same ports on localhost. This nice as the URLs for development are exactly the same as you'd see if the server was running 
+without Docker.
 
-	docker port rrr-work
-
-You should see the containers port 3000 mapped to the hosts port 3030. This is specified in up-work and you can change it to suit your needs.
-
-Now you can run 
+Now you can start puma for the development environment
 
 	rails s
 
-And see something in your browser. Go to http://localhost:3030 use the mapped host port.
-It's possible to run more than server at a time, but they'll each need their own port on the host computer.
+It's possible to see something in your browser. Go to http://localhost:3000
 
-Now, if your app is like mine, you'll see errors. We need to get the database working.
+#### Manage MySQL 8
+
+If your app is like mine, you'll see errors. We need to get the database working.
 
 Ctrl-C will stop the server. Edit config/database.yml, change the host under default from localhost to rrr-db.
 
-The up-mysql.sh script launches MySQL8 with options that allow root login from any host, ok for me inside my development computer, but don't do that in production.
-MySQL8 has new authentication plugins. I have not seen anything that is compatible with default plugin, except mysql-client.
-So that has to be fixed before we can connect.  You might find it easier to use MySQL5.7 or postgress or whatever you prefer, I wanted MySQL8.
+The up-mysql.sh script launches MySQL:8 with options that allow root login from any host,
+nice and easy for me inside my development computer, but don't do that in production.
+MySQL:8 has new authentication plugins. I have not seen anything that is compatible with default plugin, except mysql-client.
+So that has to be fixed before we can connect.
 
-To get a MySQL prompt run this in another terminal window, if you do this often put it in a script or an alias.
+To get a MySQL prompt open another terminal window and run *exec-mysql.sh* Or type in the command
+yourself
 
-	docker container exec -it rrr-db mysql
+	Docker container exec -it rrr-db mysql
 
-Now at you're at a mysql prompt, run this:
+Now you're root with a mysql prompt, run this:
 
 	ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY ''; 
-    CREATE DATABASE rrr_development;
 
 In production you'll want actual passwords and a secure database server, and remember either create users with the mysql_native_password authentication plugin, or change the mysql configuration like this:
 
 	[mysqld]
 	default-authentication-plugin = mysql_native_password
 
-A database image with a customized configuration is an exercise left to the reader who finds it necessary. 
+A database Docker image with a customized configuration is an exercise left to the reader who finds it necessary. 
 
-Now the database should be ready to go. Refresh the browser and enjoy the pretty "Yay! You're on Rails!" page. But not too long, now the real work
-of building a Rails and React web application can begin.
+You can create your database in the mysql terminal with
 
-The first problem you'll notice is an error from web console, this can be useful during development, so to fix it edit confg/environments/development.rb and 
+	CREATE DATABASE rrr_development
+	CREATE DATABASE rrr_test
+
+Or from the command line with
+
+	rails db:create
+
+#### Yea! You're on Rails
+
+Now rails is really ready, run this again
+
+	rails s
+
+Refresh the browser and enjoy the pretty "Yay! You're on Rails!" page. But not too long, now the real work
+of building a Ruby on Rails with React web application can begin.
+
+The first problem you'll notice is an error in the logs from web console, this can be useful during development, so to fix it edit confg/environments/development.rb and 
 add this line inside the Rails.application.configure block.
 
-	config.web_console.permissions = "172.17.0.0/24"
+	config.web_console.permissions = "172.28.5.0/24"
 
-That network might not be the same for your docker engine, but that should be easy enough to get right.
+If you've changed the up-net script you'll know if you need a different subnet here.
 
-### How to Work
+### How to Accomplish Work
 
-On your computer list the directory where you started and now you should see your app directory, inside that just the directory you created with rails new.
-But if you list the hidden files with -a you'll see lots of things that are hidden for good reasons. If you want to edit the project with an IDE on your 
+On your computer list the directory where you started and now you should see an app home directory, inside that is the directory you created with rails new. List hidden files and you'll see lots of things that are
+hidden for good reasons. If you want to edit the project with an IDE on your 
 computer just point it at the rails project, you can run **rails s** in the container at the same time.
 
-I'll be using SpaceVim running in the container. Other terminals can attach to the container with docker exec and run the server or continuous testing.
+I'll be using SpaceVim running in the container, and VSC natively. You can run other terminals in the container with Docker exec and run the server, command line, bin/dev-webpack-server,
+continuous testing, or anything else you'd like, all at the same time. If you do that often write a script
+to make if fast and easy.
+
+I keep these containers running all the time and just put my computer to sleep when I step away. When I do need to restart my computer I'll get the dev envronment started up again by opening three tabs in Terminal or Konsole, in the first I run:
+
+	cd rrr            // the base directory for the rrr image
+	./up-net.sh
+	./up-mysql.sh
+	./up-work.sh
+	cd rrr            // the rails project inside the app user's home directory  
+
+Here I'll be at a prompt in my project directory inside the deveopment container, then in the second tab I run:
+
+	./exec-wds
+
+This runs webpack-dev-server and will refresh the page in my browser as I save any little change to the CSS or javascript.
+
+In the third tab I'll run:
+
+	./exec-server
+
+This run the rails development server. Now I can see the web site at http://localhost:3000 see the server log in the third tab, see the webpack log in the second tab, and run commands in the first tab like 
+
+	rails generate model user name age sex
+	rails db:migrate
+	vim app/models/user.rb
+
+I also typically run VCS natively and open the "folder" rrr/app/rrr.
 
 ### Resources
 
+coming soon
 
+### Deployment
 
-
+coming eventually
 
 
 

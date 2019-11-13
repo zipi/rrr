@@ -1,0 +1,1 @@
+docker container exec -it --user=root rrr-app bash -l

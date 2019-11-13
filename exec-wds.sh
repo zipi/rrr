@@ -1,0 +1,1 @@
+docker container exec -it rrr-app bash -c 'cd rrr; bin/webpack-dev-server'
