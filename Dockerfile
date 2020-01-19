@@ -1,4 +1,4 @@
-FROM ruby:stretch
+FROM ruby:2.6.5-stretch
 LABEL maintainer="Scott Moe<admin@zipiweb.com>"
 
 RUN curl -sL https://deb.nodesource.com/setup_13.x | bash - ; \
