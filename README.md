@@ -46,7 +46,8 @@ you where you need to be.
 ### How to Get It Running 
 
 You've got to have Docker running on your computer, but that's the only prerequisite,
-and that's a big reason why I'm all "use Docker for everything", just install Docker and then run just about anything.
+and that's a big reason why I'm all "use Docker for everything", just install Docker and then run just about anything. Make sure you are able to run docker commands as a user. Usually that's just
+add your user to the docker group.
 
 Clone or copy this rrr project directory into your normal directory for work, but give it the name of the project
 you want to build.  Run a terminal window and change directory into this new project directory.
@@ -54,7 +55,7 @@ you want to build.  Run a terminal window and change directory into this new pro
 #### Rename
 
 The first thing to do is fix the name, you could keep rrr, but really, you should edit all the scripts and replace rrr with the name you want for your project. Keep in mind as you follow these directions,
-rrr shows up in a few commands, always replace it with your project's name.
+rrr shows up in a few commands, always replace it with your project's name. Also edit the Docker file and replace the maintainer label with your own name and email address.
 
 When run, the containers will create the directories they need for binding /home/app, /usr/local/bundle, and /var/lib/mysql.  These are specified in the up* scripts. I like keeping the bound volumes in the project directory, there it's easy to edit outside of the docker container, or erase everything and
 start over.
@@ -78,7 +79,13 @@ Change the script if required.
 
 Build your development image, remember to use your project's name instead of rrr.
 
-	Docker build -t rrr-work .
+	docker build -t rrr-work .
+
+Since you need the app and bundle directories to be writable by the app user in the container you 
+need to create them first before you run up-work for the first time, otherwise they will be owned by
+root, so make directories like this:
+
+	mkdir app bundle
 
 Now you can start a container with the up-work script.
 
@@ -91,7 +98,8 @@ In the container run:
 
 	/tmp/newhome.sh
 
-And when it's all done type *exit* then run up-work again.
+And when it's all done type *exit* then run up-work again. This also add the path that allows
+you to run bundler installed gems without bundle exec.
 
 Now we have an initialized bash shell, and fresh SpaceVim. Run *vim* (twice?) to get it to install all it's plugins.
 
@@ -135,7 +143,7 @@ You may see some warnings about 'unmet peer dependency "webpack@^4.0.0"', but it
 so I expect we're good.
 
 Yarn saves information in the app user's home directory, so if you remove your rails project directory and run **rails new** again
-you might see a yarn error. Follow the instructions to 
+you might see a yarn error. Follow the instructions to run
 
 	yarn install --check-files
 
@@ -171,17 +179,25 @@ Now just pay attention to the two port expose options in the up-work script. The
 the same ports on localhost. This nice as the URLs for development are exactly the same as you'd see if the server was running 
 without Docker.
 
-Now you can start puma for the development environment
+You'll want to use web console, or at least suppress the error messages so
+edit confg/environments/development.rb and add this line inside the Rails.application.configure block.
 
-	rails s
+	config.web_console.permissions = "172.28.5.0/24"
 
-It's possible to see something in your browser. Go to http://localhost:3000
+If you've changed the up-net script you'll know if you need a different subnet here.
+
+Of course before we run the server we need to edit config/database.yml.
+All you really need to change is the host.
+
+	host: rrr-db
+
+Now lets make sure the connection to the database is working by creating our databases
+
+	rails db:create
+
+If you are running MySQL 8 like I am you'll see errors
 
 #### Manage MySQL 8
-
-If your app is like mine, you'll see errors. We need to get the database working.
-
-Ctrl-C will stop the server. Edit config/database.yml, change the host under default from localhost to rrr-db.
 
 The up-mysql.sh script launches MySQL:8 with options that allow root login from any host,
 nice and easy for me inside my development computer, but don't do that in production.
@@ -204,30 +220,23 @@ In production you'll want actual passwords and a secure database server, and rem
 
 A database Docker image with a customized configuration is an exercise left to the reader who finds it necessary. 
 
-You can create your database in the mysql terminal with
+You can could your database in the mysql terminal with
 
 	CREATE DATABASE rrr_development
 	CREATE DATABASE rrr_test
 
-Or from the command line with
+Better to exit MySQL and run it from the command line so you can verify rails can control the database server.
 
 	rails db:create
 
 #### Yea! You're on Rails
 
-Now rails is really ready, run this again
+Now your application is finally ready, run the server
 
 	rails s
 
 Refresh the browser and enjoy the pretty "Yay! You're on Rails!" page. But not too long, now the real work
 of building a Ruby on Rails with React web application can begin.
-
-The first problem you'll notice is an error in the logs from web console, this can be useful during development, so to fix it edit confg/environments/development.rb and 
-add this line inside the Rails.application.configure block.
-
-	config.web_console.permissions = "172.28.5.0/24"
-
-If you've changed the up-net script you'll know if you need a different subnet here.
 
 ### How to Accomplish Work
 
@@ -272,6 +281,10 @@ coming soon
 ### Deployment
 
 coming eventually
+
+##### MySQL Users
+##### Secrets
+##### Capistrano
 
 
 
