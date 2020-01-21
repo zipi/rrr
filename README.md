@@ -29,14 +29,14 @@ You also have several scripts that are just Docker commands, I do it this way be
 with all the right options.
 up-net.sh starts a Docker network with a dependable subnet.
 up-work.sh will bring you to a bash prompt in the app user's home directory with all the good tools at your fingertips.
-You may never need up-root.sh but it's good to know how to get a root prompt. And up-mysql.sh just launchs an official MySQL:8
+You may never need up-root.sh but it's good to know how to get a root prompt. And up-mysql.sh just launches an official MySQL:8
 container with data saved in a bound volume.
 
 What I've got running now is ruby 2.6.5, rails 6.0.1, nodejs 12, yarn 19.1, python 3.5, lua 5.3,
 and the latest versions the gems that are required for Rails with React. Oh, and SpaceVim!
 
 All my scripts and the commands in this readme assume bash, if you're on Windows these will not work.
-I've tried Git bash (cygwin), and WSL bash both have problems. As usual the intential incompatibilites
+I've tried Git bash (cygwin), and WSL bash both have problems. As usual the intentional incompatibilities
 of Windows file systems and end-of-line characters are show stoppers.
 
 If you're not willing to replace Windows with a nice Ubuntu install, or at least dual boot, you'll have to figure
@@ -174,7 +174,6 @@ Edit config/webpacker.yml and change these lines as shown.
     port: 3035
     public: 127.0.0.1:3035
 
-
 Now just pay attention to the two port expose options in the up-work script. They map the container's ports 3000 and 3035 to 
 the same ports on localhost. This nice as the URLs for development are exactly the same as you'd see if the server was running 
 without Docker.
@@ -235,7 +234,7 @@ Now your application is finally ready, run the server
 
 	rails s
 
-Refresh the browser and enjoy the pretty "Yay! You're on Rails!" page. But not too long, now the real work
+Load http://localhost:3000 in your browser and enjoy the pretty "Yay! You're on Rails!" page. But not too long, now the real work
 of building a Ruby on Rails with React web application can begin.
 
 ### How to Accomplish Work
@@ -248,7 +247,7 @@ I'll be using SpaceVim running in the container, and VSC natively. You can run o
 continuous testing, or anything else you'd like, all at the same time. If you do that often write a script
 to make if fast and easy.
 
-I keep these containers running all the time and just put my computer to sleep when I step away. When I do need to restart my computer I'll get the dev envronment started up again by opening three tabs in Terminal or Konsole, in the first I run:
+I keep these containers running all the time and just put my computer to sleep when I step away. When I do need to restart my computer I'll get the dev environment started up again by opening three tabs in Terminal or Konsole, in the first I run:
 
 	cd rrr            // the base directory for the rrr image
 	./up-net.sh
@@ -256,17 +255,17 @@ I keep these containers running all the time and just put my computer to sleep w
 	./up-work.sh
 	cd rrr            // the rails project inside the app user's home directory  
 
-Here I'll be at a prompt in my project directory inside the deveopment container, then in the second tab I run:
+Here I'll be at a prompt in my project directory inside the development container, then in the second tab I run:
 
 	./exec-wds
 
-This runs webpack-dev-server and will refresh the page in my browser as I save any little change to the CSS or javascript.
+This runs webpack-dev-server and will refresh the page in my browser as I save any little change to the CSS or JavaScript.
 
 In the third tab I'll run:
 
 	./exec-server
 
-This run the rails development server. Now I can see the web site at http://localhost:3000 see the server log in the third tab, see the webpack log in the second tab, and run commands in the first tab like 
+This runs the rails development server. Now I can see the web site at http://localhost:3000 see the server log in the third tab, see the webpack log in the second tab, and run commands in the first tab like 
 
 	rails generate model user name age sex
 	rails db:migrate
@@ -276,7 +275,15 @@ I also typically run VCS natively and open the "folder" rrr/app/rrr.
 
 ### Resources
 
-coming soon
+Many of these  tutorials go over setup steps, but since you're using this rrr image you can
+skip ahead to actual application coding.
+
+https://www.youtube.com/watch?v=5F_JUvPq410
+
+https://www.youtube.com/watch?v=B0SxxHAImhc
+
+https://www.digitalocean.com/community/tutorials/how-to-set-up-a-ruby-on-rails-project-with-a-react-frontend
+
 
 ### Deployment
 
